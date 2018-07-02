@@ -1,0 +1,196 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>detect_red_color</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-07-02"><meta name="DC.source" content="detect_red_color.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Preparing HSV channels</a></li><li><a href="#4">HSV chart explains different values</a></li><li><a href="#5">Mask HSV channels</a></li><li><a href="#6">DISPLAY</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [borderMask] = detect_red_color(frame)
+</pre><pre class="codeinput"><span class="comment">% Color detection based on HSV color space</span>
+<span class="comment">% Input:</span>
+<span class="comment">% frame - Current frame</span>
+<span class="comment">%</span>
+<span class="comment">% Output:</span>
+<span class="comment">% borderMask - Noisy BW image. Red is marked by logic '1'</span>
+<span class="comment">% (represented as white), other colors are logic '0' (black).</span>
+</pre><h2 id="3">Preparing HSV channels</h2><pre class="codeinput"><span class="comment">% Read global parameters</span>
+<span class="keyword">global</span>  Static
+
+<span class="comment">% HSV transform</span>
+HSV = rgb2hsv(frame);
+
+<span class="comment">% Substituting seperated channels</span>
+H = HSV(:,:,1);
+S = HSV(:,:,2);
+V = HSV(:,:,3);
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in detect_red_color (line 16)
+HSV = rgb2hsv(frame); 
+</pre><h2 id="4">HSV chart explains different values</h2><p><img vspace="5" hspace="5" src="C:\Users\User\OneDrive - Technion\Msc\Thesis\ODVS_based_Object_Tracking\Images\HSV chart.JPG" alt=""> </p><h2 id="5">Mask HSV channels</h2><p>Filter non red colors</p><pre class="codeinput">Hfilter = ((H&lt;=Static.Hthresh(1)) | (H&gt;=Static.Hthresh(2)));
+
+<span class="comment">% Filter non-colorful (B&amp;W) color</span>
+Sfilter = ((S&gt;=Static.Sthresh));
+
+<span class="comment">% Filter dark &amp; bright color</span>
+Vfilter = ((V&gt;=Static.Vthresh(1)) &amp; (V&lt;=Static.Vthresh(2)));
+
+<span class="comment">% Multiply logic arrays to sum filters' effects</span>
+borderMask = Hfilter .* Sfilter .* Vfilter;
+</pre><h2 id="6">DISPLAY</h2><pre class="codeinput">figure(<span class="string">'name'</span>,<span class="string">'Red enhancement - HSV masks'</span>);
+subplot(2,3,1)
+imshow(frame)
+title(<span class="string">'Original frame - RGB channels'</span>)
+
+subplot(2,3,4)
+imshow(Hfilter)
+title(<span class="string">'Hue mask - Non red color masked'</span>)
+subplot(2,3,5)
+imshow(Sfilter)
+title(<span class="string">'Saturation mask - Non Saturated color masked'</span>)
+subplot(2,3,6)
+imshow(Vfilter)
+title(<span class="string">'Value mask - Extreme high &amp; low Value masked'</span>)
+
+subplot(2,3,2)
+imshow(borderMask)
+title(<span class="string">'Intersection of all masks'</span>)
+
+frame_red_marked = imoverlay(frame,borderMask,<span class="string">'red'</span>);
+subplot(2,3,3);
+imshow(frame_red_marked);
+title(<span class="string">'Border marked on frame'</span>);
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [borderMask] = detect_red_color(frame)
+% Color detection based on HSV color space
+% Input:
+% frame - Current frame
+%
+% Output:
+% borderMask - Noisy BW image. Red is marked by logic '1' 
+% (represented as white), other colors are logic '0' (black).
+
+%% Preparing HSV channels
+
+% Read global parameters
+global  Static
+
+% HSV transform
+HSV = rgb2hsv(frame); 
+
+% Substituting seperated channels
+H = HSV(:,:,1);
+S = HSV(:,:,2);
+V = HSV(:,:,3);
+
+%% HSV chart explains different values
+%
+% <<C:\Users\User\OneDrive - Technion\Msc\Thesis\ODVS_based_Object_Tracking\Images\HSV chart.JPG>>
+% 
+
+%% Mask HSV channels
+%
+% Filter non red colors
+Hfilter = ((H<=Static.Hthresh(1)) | (H>=Static.Hthresh(2)));
+
+% Filter non-colorful (B&W) color
+Sfilter = ((S>=Static.Sthresh));
+
+% Filter dark & bright color
+Vfilter = ((V>=Static.Vthresh(1)) & (V<=Static.Vthresh(2)));
+
+% Multiply logic arrays to sum filters' effects
+borderMask = Hfilter .* Sfilter .* Vfilter;
+
+%% DISPLAY
+
+figure('name','Red enhancement - HSV masks');
+subplot(2,3,1)
+imshow(frame)
+title('Original frame - RGB channels')
+
+subplot(2,3,4)
+imshow(Hfilter)
+title('Hue mask - Non red color masked')
+subplot(2,3,5)
+imshow(Sfilter)
+title('Saturation mask - Non Saturated color masked')
+subplot(2,3,6)
+imshow(Vfilter)
+title('Value mask - Extreme high & low Value masked')
+
+subplot(2,3,2)
+imshow(borderMask)
+title('Intersection of all masks')
+
+frame_red_marked = imoverlay(frame,borderMask,'red');
+subplot(2,3,3);
+imshow(frame_red_marked);
+title('Border marked on frame');
+
+end
+##### SOURCE END #####
+--></body></html>

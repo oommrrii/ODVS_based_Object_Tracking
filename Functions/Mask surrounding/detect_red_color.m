@@ -7,39 +7,62 @@ function [borderMask] = detect_red_color(frame)
 % borderMask - Noisy BW image. Red is marked by logic '1' 
 % (represented as white), other colors are logic '0' (black).
 
+%% Preparing HSV channels
+
 % Read global parameters
-global Static
+global  Static
 
-% Adjust brightness (<1 brighten for better detection)
-%frame_brighten = imadjust(frame, [], [], Static.brightness);
-frame_brighten = frame;
+% HSV transform
+HSV = rgb2hsv(frame); 
 
-% Enhance the red color and mask other colors
-frame_red_enhanced = red_enhancement(frame_brighten);
+% Substituting seperated channels
+H = HSV(:,:,1);
+S = HSV(:,:,2);
+V = HSV(:,:,3);
 
-% Observe red channel only
-R = frame_red_enhanced(:,:,1);
+%% HSV chart explains different values
+%
+% <<C:\Users\User\OneDrive - Technion\Msc\Thesis\ODVS_based_Object_Tracking\Images\HSV chart.JPG>>
+% 
 
-% Make a logical mask from high red values
-borderMask = (R >= Static.Rthresh);
+%% Mask HSV channels
+%
+% Filter non red colors
+Hfilter = ((H<=Static.Hthresh(1)) | (H>=Static.Hthresh(2)));
+
+% Filter non-colorful (B&W) color
+Sfilter = ((S>=Static.Sthresh));
+
+% Filter dark & bright color
+Vfilter = ((V>=Static.Vthresh(1)) & (V<=Static.Vthresh(2)));
+
+% Multiply logic arrays to sum filters' effects
+borderMask = Hfilter .* Sfilter .* Vfilter;
 
 %% DISPLAY
 
-figure('name','Detect red color');
-subplot(2,3,1)
-imshow(frame)
-title('Original frame')
-subplot(2,3,2)
-imshow(frame_brighten)
-title('Brighter frame')
-subplot(2,3,3)
-imshow(frame_red_enhanced)
-title('Enhanced red color & other colors masked')
-subplot(2,3,4)
-imshow(R)
-title('Red channel only')
-subplot(2,3,5)
-imshow(borderMask)
-title('Mask non red colors')
+% figure('name','Red enhancement - HSV masks');
+% subplot(2,3,1)
+% imshow(frame)
+% title('Original frame - RGB channels')
+% 
+% subplot(2,3,4)
+% imshow(Hfilter)
+% title('Hue mask - Non red color masked')
+% subplot(2,3,5)
+% imshow(Sfilter)
+% title('Saturation mask - Non Saturated color masked')
+% subplot(2,3,6)
+% imshow(Vfilter)
+% title('Value mask - Extreme high & low Value masked')
+% 
+% subplot(2,3,2)
+% imshow(borderMask)
+% title('Intersection of all masks')
+% 
+% frame_red_marked = imoverlay(frame,borderMask,'red');
+% subplot(2,3,3);
+% imshow(frame_red_marked);
+% title('Border marked on frame');
 
 end

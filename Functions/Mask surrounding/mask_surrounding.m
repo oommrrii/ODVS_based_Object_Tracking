@@ -35,21 +35,16 @@ else % If the camera doesn't move
     tableMask = Dynamic.tableMask;
 end
 %% 3
-% Initialize array
-masked_frame = frame;
-
 % Multiply the frame with the mask to make all surrounding background black
-for i = 1:size(frame,3)
-    masked_frame(:,:,i) = immultiply(frame(:,:,i),logical(tableMask));
-end
+masked_frame = immultiply(frame,repmat(logical(tableMask),[1 1 3]));
 
 %% DISPLAY
-figure('name','Mask serrounding');
-subplot(1,2,1)
-imshow(frame)
-title('Original frame')
-subplot(1,2,2)
-imshow(masked_frame)
-title('Masked frame')
+% figure('name','Mask serrounding');
+% subplot(1,2,1)
+% imshow(frame)
+% title('Original frame')
+% subplot(1,2,2)
+% imshow(masked_frame)
+% title('Masked frame')
 
 end
