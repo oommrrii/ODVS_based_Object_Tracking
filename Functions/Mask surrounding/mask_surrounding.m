@@ -1,16 +1,16 @@
-function [masked_frame] = mask_surrounding(frame)
+function [cropped_frame] = mask_surrounding(frame)
 % input/output: frame image/ frame image without table surrounding.
 
 % 1) Detects the table by enhancing the red line encircling the table and 
 %    creating a logical image marking it.
 % 2) Manipulates the logicaly marked border and creates a mask that covers 
 %    the surrounding of the table.
-% 3) Cover the input frame with the table mask and output the masked frame
-%    as a clean data for the rest of the algorithm.
-
 % *) If function decides if it is needed to detect a new table mask or it
 %    is possible to use last derived mask.
 
+% 3) Cover the input frame with the table mask and output the masked frame
+%    as a clean data for the rest of the algorithm.
+% 4) Crop the masked image in order to compute less pixels.
 global Dynamic
 
 % If function decides if it is needed to detect a new table mask or not
@@ -37,6 +37,15 @@ end
 %% 3
 % Multiply the frame with the mask to make all surrounding background black
 masked_frame = immultiply(frame,repmat(logical(tableMask),[1 1 3]));
+
+%% 4
+% Crop a rectangular frame arround the mask's true values
+[row,col] = find(tableMask);
+up = min(row);
+down = max(row);
+left = min(col);
+right = max(col);
+cropped_frame = imcrop(masked_frame,[left up right-left down-up]);
 
 %% DISPLAY
 % figure('name','Mask serrounding');

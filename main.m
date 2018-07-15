@@ -7,30 +7,39 @@ clear all; clc; close all;
 %% Initialize algorithm
 %%
 % Define global parameters
-run('define_global_parameters.mlx');
+run('define_global_parameters.m');
 
 % Load an offline video
 [frame,video_ended] = video('initialize'); % 'initialize'/'next'/'record'/'finalize'
 
 % Obtain measurement (Detect target & Data association)
-% [measurement] = measure(frame);
+[measurement,frame] = detect(frame);
 
 % Set prior
-% [X,P] = initialize_state(measurement);
+[X,P] = initialize_state(measurement);
+
+% Record manipulated frame
+video('record',frame);
 %% Run state estimation loop
 %%
 estimation_loop_timer = tic; % Timer
 % While video has not ended, run state estimation on each frame
 while ~video_ended
     
+    % Predict the state before the next sampling
+    [X_predicted,P_predicted] = prediction_state(X,P);
+    
     % Load next video frame
     [frame,video_ended] = video('next');
     
     % Obtain measurement
-    % [measurement] = measure(frame);
+    [measurement,frame] = detect(frame);
     
     % Update the state via innovation (using measurement likelihood from prior and taken measurement)
-    % [X,P] = update(measurement,X,P);
+    [X,P] = update_state(measurement,X_predicted,P_predicted);
+    
+    % Display estimated data
+    [frame] = display_estimation(frame,X,P);
     
     % Record manipulated frame
     video('record',frame);

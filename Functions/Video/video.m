@@ -13,7 +13,7 @@ function [frame,video_ended] = video(option,frame_for_record)
 global vidObj;
 
 %% DEFINE VIDEO LOCATION & FILE NAME
-global Path LoadVideoName SaveVideoName
+global Path LoadVideoName SaveVideoName Static
 addpath(genpath(Path)); % adds a folder to the path
 
 %% MANIPULATE VIDEO
@@ -30,9 +30,12 @@ switch option
         % vidObj.viewer = vision.DeployableVideoPlayer('Size','Custom','CustomSize',[820 600]);
         % vidObj.videoPlayer = vision.VideoPlayer('Position', [300, 20, 900, 800]);
         
+        % initialize camera's sampling rate parameter
+        Static.f = vidObj.reader.info.VideoFrameRate;
+        
         % Record tracking video
-        vidObj.writer = vision.VideoFileWriter(SaveVideoName,'FrameRate',...
-            vidObj.reader.info.VideoFrameRate,'VideoCompressor', 'MJPEG Compressor');
+        vidObj.writer = vision.VideoFileWriter(SaveVideoName,...
+            'FrameRate',Static.f,'VideoCompressor', 'MJPEG Compressor');
         
         % For choosing a different codec for recorded video,
         % write in the command window the folowing line and click 'Tab':
