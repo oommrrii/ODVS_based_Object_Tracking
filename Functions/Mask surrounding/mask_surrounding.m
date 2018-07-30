@@ -1,4 +1,4 @@
-function [cropped_frame] = mask_surrounding(frame)
+function [masked_frame] = mask_surrounding(frame)
 % input/output: frame image/ frame image without table surrounding.
 
 % 1) Detects the table by enhancing the red line encircling the table and 
@@ -40,12 +40,7 @@ masked_frame = immultiply(frame,repmat(logical(tableMask),[1 1 3]));
 
 %% 4
 % Crop a rectangular frame arround the mask's true values
-[row,col] = find(tableMask);
-up = min(row);
-down = max(row);
-left = min(col);
-right = max(col);
-cropped_frame = imcrop(masked_frame,[left up right-left down-up]);
+% cropped_frame = frame_crop(tableMask,masked_frame);
 
 %% DISPLAY
 % figure('name','Mask serrounding');
@@ -55,5 +50,8 @@ cropped_frame = imcrop(masked_frame,[left up right-left down-up]);
 % subplot(1,2,2)
 % imshow(masked_frame)
 % title('Masked frame')
+
+% figure('name','Mask serrounding');
+% imshowpair(frame,masked_frame,'montage');
 
 end

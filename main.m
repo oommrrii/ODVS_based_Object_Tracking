@@ -18,6 +18,9 @@ run('define_global_parameters.m');
 % Set prior
 [X,P] = initialize_state(measurement);
 
+% Display estimated data
+[frame] = display_estimation(frame,X,P);
+
 % Record manipulated frame
 video('record',frame);
 %% Run state estimation loop

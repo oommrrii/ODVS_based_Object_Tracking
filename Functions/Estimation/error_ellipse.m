@@ -1,5 +1,6 @@
 function [ellipse] = error_ellipse(P,X)
-% Plot error ellipse for the covariance matrix
+% Transform the estimated state covariance matrix to a representative error
+% ellipse.
 % Input:
 % X - state vector of robot.
 % P - covariance matrix of the state.
@@ -35,11 +36,15 @@ end
 % Get the 95% confidence interval error ellipse
 chisquareRoot_val = sqrt(Static.S); % 2.4477
 theta_grid = linspace(0,2*pi);
-phi = angle;
+% Use negative angle because covarriance to ellipse calculation has been
+% done in a normal cartezian (x,y) coordinate frame, while image
+% presentation is done using a fliped y axis with its origin at the top of
+% the image.
+phi = -angle;
 X0=X(1);
 Y0=X(2);
-a=chisquareRoot_val*sqrt(largest_eigenval)*Static.ellipseScale;
-b=chisquareRoot_val*sqrt(smallest_eigenval)*Static.ellipseScale;
+a= sqrt(largest_eigenval*chisquareRoot_val)*Static.ellipseScale;
+b= sqrt(smallest_eigenval*chisquareRoot_val)*Static.ellipseScale;
 
 % the ellipse in x and y coordinates 
 ellipse_x_r  = a*cos( theta_grid );
@@ -65,8 +70,8 @@ ellipse = reshape(r_ellipse,1,[]);
 % hold on;
 % 
 % % Plot the eigenvectors
-% quiver(X0, Y0, largest_eigenvec(1)*sqrt(largest_eigenval), largest_eigenvec(2)*sqrt(largest_eigenval), '-m', 'LineWidth',2);
-% quiver(X0, Y0, smallest_eigenvec(1)*sqrt(smallest_eigenval), smallest_eigenvec(2)*sqrt(smallest_eigenval), '-g', 'LineWidth',2);
+% quiver(X0, Y0, largest_eigenvec(1)*largest_eigenval, -largest_eigenvec(2)*largest_eigenval, '-m', 'LineWidth',2);
+% quiver(X0, Y0, smallest_eigenvec(1)*smallest_eigenval, -smallest_eigenvec(2)*smallest_eigenval, '-g', 'LineWidth',2);
 % hold off;
 % 
 % axis equal;

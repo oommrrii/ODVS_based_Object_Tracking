@@ -22,9 +22,12 @@ vidObj.reader2 = VideoReader(LoadVideoName2);
 % Create a video player, to display the video and the foreground mask.
 vidObj.viewer = vision.DeployableVideoPlayer('Size','Custom','CustomSize',[820 600]);
 
+% Video1 frame rate
+FrameRate = vidObj.reader1.info.VideoFrameRate;
+
 % Record tracking video
 vidObj.writer = vision.VideoFileWriter(SaveVideoName,'FrameRate',...
-    vidObj.reader1.info.VideoFrameRate,'VideoCompressor', 'MJPEG Compressor');
+    FrameRate,'VideoCompressor', 'MJPEG Compressor');
 
 % For choosing a codec for recorded video. 
 % write in the command window the folowing line and click 'Enter':
@@ -34,12 +37,31 @@ vidObj.writer = vision.VideoFileWriter(SaveVideoName,'FrameRate',...
 
 %% SET PARAMETERS
 
-% Decide which seconds to add to the record.
-t1 = 19; % Start after x seconds
-% t2 = 24; % Cut after y seconds
+nFrames = 0;
+
+% Decide which seconds of the first video to add to the record.
+t1x = 23; % Start after x seconds
+% t1y = 24; % Cut after y seconds
+
+% Transfer time to number of frames
+f1x = FrameRate * t1x;
+% f1y = FrameRate * t1y;
+
+% Progress video 1 to the starting frame
+if (t1x ~= 0)
+    while (nFrames < f1x)
+        nFrames = nFrames +1;     % Propagate frame counter
+        % Read next frame
+        frame  = step(vidObj.reader1);
+    end
+end
+
+% Decide which seconds of the second video to add to the record.
+t2x = 12; % Start after x seconds
+% t2y = 24; % Cut after y seconds
 
 % Initial second video at the chosen frame
-vidObj.reader2.CurrentTime = t1;
+vidObj.reader2.CurrentTime = t2x;
 
 % Choose overlay position
 row = 1;
@@ -49,7 +71,6 @@ col = 1;
 xmin = 68;
 width = vidObj.reader2.Width - xmin - 88;
 
-nFrames = 0;
 
 %% FRAMES MANIPULATION
 % MAIN LOOP. 
@@ -60,14 +81,19 @@ while ~isDone(vidObj.reader1)  % Run frames until the last one
         
     % Read next frame
     frame  = step(vidObj.reader1);
-    frame2 = readFrame(vidObj.reader2);
+    if hasFrame(vidObj.reader2)
+        frame2 = readFrame(vidObj.reader2);
+    end
     
     % Crop second video
     frame2_cropped = imcrop(frame2,[xmin 1 width vidObj.reader2.Height]);%[xmin ymin width height]
 %     imshow(frame2_cropped);
 
     % Resize second video
-    frame2_small = im2single(imresize(frame2_cropped,0.26));
+    frame2_small = imresize(frame2_cropped,0.55);
+    
+    % Transfering image pixels values from uint8 to single
+    frame2_small = im2single(frame2_small);
     
     % Overlay both frames
     frameSize = size(frame2_small);
@@ -83,6 +109,5 @@ elapsed_time = toc(video_calc) % Timer
 
 %% STOP VIDEO
 % Release resources
- release(vidObj.reader1);
  release(vidObj.viewer);
  release(vidObj.writer);

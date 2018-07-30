@@ -27,6 +27,7 @@ frame = insertText(frame,transpose(X)+[20 12],text_str,'FontSize',18,'BoxColor',
 
 %% Display
 
+% frame(10)
 % imshow(frame);
 
 end

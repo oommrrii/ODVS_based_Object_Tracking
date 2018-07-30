@@ -17,7 +17,7 @@ bw_UnNoised = bwareaopen(borderMask, Static.maxNoiseSize(1));
 
 %% Complete the scattered border shape
 % Dilate (wider) image using large size structural element (disk shape).
-% Used for enlarging shape bounderies and connecting shape parts into
+% Used for enlarging shape boundaries and connecting shape parts into
 % continouos circle shape.
 bw_dilate = imdilate(bw_UnNoised, Static.seTable(1)); 
 
@@ -31,17 +31,13 @@ bw_thin = bwmorph(bw_dilate, 'thin',inf);
 bw_dilate_small = imdilate(bw_thin,Static.seTable(2));
 
 %% Mask background outside of the table border from the inner edge of the border
-% Image inverse (###O###O### => OOO#OOO#OOO)
-bw_inv = imcomplement(bw_dilate_small);
-
 % Fill the circle to a complete disk (###O###O### => ###OOOOO###)
 bw_fill = imfill(bw_dilate_small,'holes');
 
 % Mask background, outside of the border
-% Combine '1' pixels from the image inverse and the filled image
-% (OOO#OOO#OOO * ###OOOOO### => ####OOO####)
-tableMask = bw_fill.*bw_inv;
-
+% Deduce '1' pixels from the filled image and the dilated image
+% (###OOOOO### - ###O###O### => ####OOO####)
+tableMask = bw_fill-bw_dilate_small;
 
 %% Display
 
@@ -55,7 +51,6 @@ tableMask = bw_fill.*bw_inv;
 % frame_red_marked = imoverlay(frame,bw_dilate_small,'red');
 % subplot(2,5,6); imshow(frame_red_marked); title('Border marked on frame');
 % 
-% subplot(2,5,7); imshow(bw_inv); title('Border inverse');
 % subplot(2,5,8); imshow(bw_fill); title('Border fill');
 % subplot(2,5,9); imshow(tableMask); title('Table mask')
 % 

@@ -4,6 +4,7 @@ global Path LoadVideoName SaveVideoName
 
 Path = "C:\Users\User\OneDrive - Technion\Msc\Thesis\Experiments"; % adds the folder of the raw data to the path
 LoadVideoName = '2nd_experiment\Video cut\Experiment02_ODVS_a_short.avi'; % Name of a video file
+%LoadVideoName = '2nd_experiment\Experiment02_ODVS_a.avi'; % Name of a video file
 SaveVideoName = Path + "\2nd_experiment\manipulated data\MyTrackingResults_Experiment02_ODVS_a.avi"; % Name of video results file
 
 % Transfer strings to char vectors

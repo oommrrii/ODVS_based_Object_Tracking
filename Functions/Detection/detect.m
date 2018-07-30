@@ -11,29 +11,42 @@ global detectObj Static;
 
 % Transform RGB frame into Gray scale
 I = rgb2gray(frame);
-BW = imbinarize(I,0.55);
+BW = imbinarize(I,0.52);
 
 % Apply morphological operations to remove noise and fill in holes.
+
+% Perform an erosion followed by a dilation using a small disk shape
+% structural element to erase small regions which most likely represents
+% noise or non accurate detected regions:
 BW_open = imopen(BW, Static.seRobot(1));
+
+% Perform a dilation followed by an erosion using a large disk shape
+% structural element to connect separated regions and make the regions
+% rounder:
 BW_close = imclose(BW_open, Static.seRobot(2));
+
+% Fill holes in the BW image to remove noise from detections:
 mask = imfill(BW_close, 'holes');
 
-% Perform blob analysis to find connected components.
+% Perform blob analysis to find connected components within a certain size
+% (number of pixels) boundary.
 [measurement.centroids, measurement.bboxes, measurement.majorAxis, ...
     measurement.minorAxis, measurement.orientation] = detectObj.blobAnalyser.step(mask);
 
 %% Display detected robots
 %
-% Create categorical labels based on the image contents.
+% Create categorical labels based on the image contents. Each pixel
+% receives a label.
 stringArray = repmat("table",size(mask));
 stringArray(mask) = "robot";
-categoricalSegmentation = categorical(stringArray);
 
+% Create categories.
+categoricalSegmentation = categorical(stringArray);
 % Fuse the mask with the original image.
 frame = labeloverlay(frame,categoricalSegmentation,'IncludedLabels',"robot",...
     'Colormap','autumn','Transparency',0.7);
 
-% Display different frame manipulations.
+%% Display different frame manipulations.
 % figure;
 % subplot(2,4,1);
 % imshow(I); title('Gray scale frame');

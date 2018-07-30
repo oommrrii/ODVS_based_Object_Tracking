@@ -16,8 +16,8 @@ H = [1 0;
     0 1];
 
 % measurement noise covariance
-R = [10 0;
-    0 10];
+R = [1 0;
+    0 1];
 
 % Measurement likelihood
 Z_hat = H*X_prior;

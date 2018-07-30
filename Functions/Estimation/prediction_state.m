@@ -15,8 +15,8 @@ global Static;
 T = 1/Static.f;
 
 % Process noise covariance matrix
-Q = [0.1 0;
-    0 0.1];
+Q = [5 0;
+    0 5];
 
 % Motion model
 F = [1 0;

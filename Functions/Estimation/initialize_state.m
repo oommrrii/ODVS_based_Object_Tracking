@@ -28,11 +28,16 @@ end
 % Construct a covariance matrix in the robot's body frame, from the major &
 % minor axis of the the ellipse that has the same second-moments as the
 % region of the blob.
-P_robot = [((measurement.majorAxis/2)^2)/Static.S 0;
-    0 ((measurement.minorAxis/2)^2)/Static.S];
+% Substitute the variance in x & y
+varX = ((measurement.majorAxis/2)^2)/Static.S;
+varY = ((measurement.minorAxis/2)^2)/Static.S;
+covar = sqrt(varX * varY);
+
+P_robot = [varX 0;
+           0 varY];
 
 % Transforming covariance matrix to the image frame
 R_robot2image = [cos(a) -sin(a);
     sin(a) cos(a)];
-P_image = [0 0;0 0];%R_robot2image * P_robot;
+P_image = R_robot2image * P_robot * R_robot2image';
 end
